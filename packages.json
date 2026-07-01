@@ -1,0 +1,16 @@
+{
+  "default": "kiro",
+  "packages": {
+    "kiro": {
+      "description": "IDE for Agentic AI workflows based on VS Code",
+      "homepage": "https://kiro.dev",
+      "kind": "nixpkgs-override",
+      "baseAttr": "kiro",
+      "system": "x86_64-linux",
+      "unfree": true,
+      "metadataUrl": "https://prod.download.desktop.kiro.dev/stable/metadata-linux-x64-stable.json",
+      "versionQuery": ".currentRelease",
+      "urlQuery": ".releases[] | select(.version == $version) | .updateTo.url | select(endswith(\".tar.gz\"))"
+    }
+  }
+}

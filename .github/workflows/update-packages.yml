@@ -1,0 +1,88 @@
+name: Update packages
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: update-packages
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.update.outputs.changed }}
+      packages: ${{ steps.update.outputs.packages }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/determinate-nix-action@v3
+
+      - name: Run update script
+        id: update
+        run: nix develop --command ./scripts/update-packages.sh
+
+      - name: Format generated files
+        if: steps.update.outputs.changed == 'true'
+        run: nix fmt -- $(git ls-files '*.nix')
+
+      - name: Validate flake
+        if: steps.update.outputs.changed == 'true'
+        run: nix flake check -L
+
+      - name: Commit to main
+        if: steps.update.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add packages/**/generated.nix packages/**/metadata.sha256
+          git commit -m "chore: update packages (${{ steps.update.outputs.packages }})"
+          git push origin HEAD:main
+
+  # Pages redeploys only after an update actually landed on main, never on
+  # arbitrary pushes.
+  deploy-pages:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install site dependencies
+        working-directory: site
+        run: bun install --frozen-lockfile
+
+      - name: Build static site
+        working-directory: site
+        run: bun run build
+
+      - name: Add SPA fallback
+        working-directory: site
+        run: cp dist/client/index.html dist/client/404.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site/dist/client
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
