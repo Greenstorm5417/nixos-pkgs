@@ -29,7 +29,7 @@ jobs:
 
       - name: Run update script
         id: update
-        run: nix develop --command ./scripts/update-packages.sh
+        run: nix develop --command bash ./scripts/update-packages.sh
 
       - name: Format generated files
         if: steps.update.outputs.changed == 'true'

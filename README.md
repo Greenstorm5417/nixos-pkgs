@@ -140,11 +140,10 @@ See `packages/kiro/example-flake.nix` for a complete example.
   commits directly to `main`, and then **deploys the Pages site** in a
   dependent job. Pages therefore deploys right after an update lands — not on
   arbitrary pushes.
-- **`ci.yml`** runs on every pull request and push to `main`: Nix formatting
-  check, `nix flake check` (which builds every package), and a Bun build of
-  the site so missing/invalid metadata fails CI.
-- **`pages.yml`** is a manual (`workflow_dispatch`) deploy for on-demand
-  redeploys, e.g. after editing the site itself.
+- **`ci.yml`** runs on every pull request and push to `main`: a `nix` job
+  (formatting check + `nix flake check`, which builds every package) and a
+  `site` job (Bun build + type-check) that only runs after `nix` passes, so
+  missing/invalid metadata or a bad hash fails CI before the site is built.
 
 All workflows that need Nix install it with
 [`DeterminateSystems/determinate-nix-action`](https://github.com/DeterminateSystems/determinate-nix-action).
