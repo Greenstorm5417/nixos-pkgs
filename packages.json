@@ -11,6 +11,17 @@
       "metadataUrl": "https://prod.download.desktop.kiro.dev/stable/metadata-linux-x64-stable.json",
       "versionQuery": ".currentRelease",
       "urlQuery": ".releases[] | select(.version == $version) | .updateTo.url | select(endswith(\".tar.gz\"))"
+    },
+    "windsurf": {
+      "description": "AI-powered code editor built on VS Code by Codeium",
+      "homepage": "https://windsurf.com",
+      "kind": "nixpkgs-override",
+      "baseAttr": "windsurf",
+      "system": "x86_64-linux",
+      "unfree": true,
+      "metadataUrl": "https://windsurf-stable.codeium.com/api/update/linux-x64/stable/latest",
+      "versionQuery": ".name",
+      "urlQuery": ".url"
     }
   }
 }
