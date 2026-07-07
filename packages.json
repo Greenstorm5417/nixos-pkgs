@@ -13,7 +13,7 @@
       "urlQuery": ".releases[] | select(.version == $version) | .updateTo.url | select(endswith(\".tar.gz\"))"
     },
     "windsurf": {
-      "description": "AI-powered code editor built on VS Code by Codeium (rebranded as Devin Desktop)",
+      "description": "Agentic IDE powered by AI Flow paradigm (formerly Windsurf)",
       "homepage": "https://devin.ai/desktop",
       "kind": "nixpkgs-override",
       "baseAttr": "devin-desktop",
