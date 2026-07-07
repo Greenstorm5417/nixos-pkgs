@@ -13,14 +13,14 @@
       "urlQuery": ".releases[] | select(.version == $version) | .updateTo.url | select(endswith(\".tar.gz\"))"
     },
     "windsurf": {
-      "description": "AI-powered code editor built on VS Code by Codeium",
-      "homepage": "https://windsurf.com",
+      "description": "AI-powered code editor built on VS Code by Codeium (rebranded as Devin Desktop)",
+      "homepage": "https://devin.ai/desktop",
       "kind": "nixpkgs-override",
-      "baseAttr": "windsurf",
+      "baseAttr": "devin-desktop",
       "system": "x86_64-linux",
       "unfree": true,
       "metadataUrl": "https://windsurf-stable.codeium.com/api/update/linux-x64/stable/latest",
-      "versionQuery": ".name",
+      "versionQuery": ".windsurfVersion",
       "urlQuery": ".url"
     }
   }
