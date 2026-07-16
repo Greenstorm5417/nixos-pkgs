@@ -48,7 +48,10 @@ for name in "${names[@]}"; do
   metadata_hash_file="$pkg_dir/metadata.sha256"
 
   echo "[$name] fetching metadata from $metadata_url"
-  metadata="$(curl -fsSL "$metadata_url")"
+  if ! metadata="$(curl -fsSL "$metadata_url")"; then
+    echo "[$name] failed to fetch metadata; skipping this package" >&2
+    continue
+  fi
   metadata_hash="$(printf '%s' "$metadata" | sha256sum | awk '{print $1}')"
 
   old_metadata_hash=""
@@ -95,7 +98,15 @@ for name in "${names[@]}"; do
     continue
   fi
 
-  nix_hash="$(nix store prefetch-file --json "$download_url" | jq -r '.hash')"
+  if ! prefetch_json="$(nix store prefetch-file --json "$download_url")"; then
+    echo "[$name] failed to prefetch download url; skipping this package" >&2
+    continue
+  fi
+  nix_hash="$(jq -r '.hash' <<<"$prefetch_json")"
+  if [ -z "$nix_hash" ] || [ "$nix_hash" = "null" ]; then
+    echo "[$name] could not determine nix hash from prefetch output" >&2
+    continue
+  fi
 
   cat > "$generated_file" <<EOF
 {
