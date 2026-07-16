@@ -1,6 +1,7 @@
 {
   fetchurl,
   base,
+  ...
 }:
 
 let

@@ -17,7 +17,7 @@ let
   };
 in
 import ./default.nix {
-  inherit (pkgs) fetchurl;
+  inherit (pkgs) fetchurl libcap;
   # `base` is the upstream nixpkgs `kiro` package; default.nix overrides its
   # version/src with the auto-fetched release described in ./generated.nix.
   base = pkgs.kiro;

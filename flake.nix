@@ -24,7 +24,7 @@
           cfg = packagesConfig.packages.${name};
         in
         import (./packages + "/${name}") {
-          inherit (prev) fetchurl;
+          inherit (prev) fetchurl libcap;
           base = prev.${cfg.baseAttr};
         };
     in
