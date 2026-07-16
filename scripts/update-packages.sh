@@ -49,7 +49,7 @@ for name in "${names[@]}"; do
 
   echo "[$name] fetching metadata from $metadata_url"
   if ! metadata="$(curl -fsSL "$metadata_url")"; then
-    echo "[$name] failed to fetch metadata; skipping this run" >&2
+    echo "[$name] failed to fetch metadata; skipping this package" >&2
     continue
   fi
   metadata_hash="$(printf '%s' "$metadata" | sha256sum | awk '{print $1}')"
@@ -99,7 +99,7 @@ for name in "${names[@]}"; do
   fi
 
   if ! prefetch_json="$(nix store prefetch-file --json "$download_url")"; then
-    echo "[$name] failed to prefetch download url; skipping this run" >&2
+    echo "[$name] failed to prefetch download url; skipping this package" >&2
     continue
   fi
   nix_hash="$(jq -r '.hash' <<<"$prefetch_json")"
