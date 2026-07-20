@@ -1,4 +1,6 @@
-{ pkgs ? import <nixpkgs> { } }:
+{
+  pkgs ? import <nixpkgs> { },
+}:
 
 let
   packagesConfig = builtins.fromJSON (builtins.readFile ./packages.json);

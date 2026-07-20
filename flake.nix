@@ -23,7 +23,8 @@
 
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
-      supportsSystem = name: system:
+      supportsSystem =
+        name: system:
         let
           cfg = packagesConfig.packages.${name};
         in
@@ -80,13 +81,7 @@
             else
               builtins.head systemPackageNames;
         in
-        entries
-        // (
-          if systemPackageNames == [ ] then
-            { }
-          else
-            { default = entries.${defaultName}; }
-        )
+        entries // (if systemPackageNames == [ ] then { } else { default = entries.${defaultName}; })
       );
 
       # `nix flake check` builds every package as a check, so a broken
