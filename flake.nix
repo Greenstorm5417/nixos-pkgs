@@ -9,12 +9,25 @@
     { self, nixpkgs }:
 
     let
-      systems = [ "x86_64-linux" ];
+      packagesConfig = builtins.fromJSON (builtins.readFile ./packages.json);
+      packageNames = builtins.attrNames packagesConfig.packages;
+      systems = nixpkgs.lib.unique (
+        builtins.concatMap (
+          name:
+          let
+            cfg = packagesConfig.packages.${name};
+          in
+          cfg.systems or [ cfg.system ]
+        ) packageNames
+      );
 
       forAllSystems = nixpkgs.lib.genAttrs systems;
 
-      packagesConfig = builtins.fromJSON (builtins.readFile ./packages.json);
-      packageNames = builtins.attrNames packagesConfig.packages;
+      supportsSystem = name: system:
+        let
+          cfg = packagesConfig.packages.${name};
+        in
+        builtins.elem system (cfg.systems or [ cfg.system ]);
 
       # Every package directory under ./packages is built by importing its
       # default.nix with the inputs described by its packages.json entry.
@@ -23,10 +36,13 @@
         let
           cfg = packagesConfig.packages.${name};
         in
-        import (./packages + "/${name}") {
-          inherit (prev) fetchurl libcap;
-          base = prev.${cfg.baseAttr};
-        };
+        if (cfg.kind or "nixpkgs-override") == "standalone" then
+          import (./packages + "/${name}") { pkgs = prev; }
+        else
+          import (./packages + "/${name}") {
+            inherit (prev) fetchurl libcap;
+            base = prev.${cfg.baseAttr};
+          };
     in
     {
       # Adds `<name>-auto` to nixpkgs for every package in packages.json,
@@ -38,12 +54,13 @@
           map (name: {
             name = "${name}-auto";
             value = buildPackage prev name;
-          }) packageNames
+          }) (builtins.filter (name: supportsSystem name prev.stdenv.hostPlatform.system) packageNames)
         );
 
       packages = forAllSystems (
         system:
         let
+          systemPackageNames = builtins.filter (name: supportsSystem name system) packageNames;
           pkgs = import nixpkgs {
             inherit system;
             config.allowUnfree = true;
@@ -54,15 +71,21 @@
             map (name: {
               inherit name;
               value = pkgs."${name}-auto";
-            }) packageNames
+            }) systemPackageNames
           );
+          configuredDefault = packagesConfig.default or null;
+          defaultName =
+            if configuredDefault != null && builtins.elem configuredDefault systemPackageNames then
+              configuredDefault
+            else
+              builtins.head systemPackageNames;
         in
         entries
         // (
-          if packageNames == [ ] then
+          if systemPackageNames == [ ] then
             { }
           else
-            { default = entries.${packagesConfig.default or (builtins.head packageNames)}; }
+            { default = entries.${defaultName}; }
         )
       );
 
@@ -74,7 +97,7 @@
           map (name: {
             inherit name;
             value = self.packages.${system}.${name};
-          }) packageNames
+          }) (builtins.filter (name: supportsSystem name system) packageNames)
         )
       );
 

@@ -22,6 +22,22 @@
       "metadataUrl": "https://windsurf-stable.codeium.com/api/update/linux-x64/stable/latest",
       "versionQuery": ".windsurfVersion",
       "urlQuery": ".url"
+    },
+    "zoeken": {
+      "description": "Privacy-respecting metasearch engine",
+      "homepage": "https://github.com/Greenstorm5417/Zoeken",
+      "kind": "standalone",
+      "systems": [
+        "x86_64-linux",
+        "aarch64-linux"
+      ],
+      "unfree": false,
+      "metadataUrl": "https://api.github.com/repos/Greenstorm5417/Zoeken/releases/latest",
+      "versionQuery": ".tag_name | ltrimstr(\"v\")",
+      "urlQueries": {
+        "x86_64-linux": ".assets[] | select(.name == (\"zoeken_\" + $version + \"_x86_64-linux.tar.gz\")) | .browser_download_url",
+        "aarch64-linux": ".assets[] | select(.name == (\"zoeken_\" + $version + \"_aarch64-linux.tar.gz\")) | .browser_download_url"
+      }
     }
   }
 }

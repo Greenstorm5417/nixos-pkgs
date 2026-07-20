@@ -32,14 +32,15 @@ for name in "${names[@]}"; do
   pkg="$(jq -c --arg name "$name" '.packages[$name]' "$packages_json")"
   kind="$(jq -r '.kind // "nixpkgs-override"' <<<"$pkg")"
 
-  if [ "$kind" != "nixpkgs-override" ]; then
+  if [ "$kind" != "nixpkgs-override" ] && [ "$kind" != "standalone" ]; then
     echo "[$name] skipping unsupported package kind: $kind" >&2
     continue
   fi
 
   metadata_url="$(jq -r '.metadataUrl' <<<"$pkg")"
   version_query="$(jq -r '.versionQuery' <<<"$pkg")"
-  url_query="$(jq -r '.urlQuery' <<<"$pkg")"
+  url_query="$(jq -r '.urlQuery // empty' <<<"$pkg")"
+  url_queries="$(jq -c '.urlQueries // null' <<<"$pkg")"
 
   pkg_dir="$repo_root/packages/$name"
   mkdir -p "$pkg_dir"
@@ -86,42 +87,89 @@ for name in "${names[@]}"; do
     continue
   fi
 
-  # urlQuery may legitimately match more than one asset (e.g. multiple
-  # mirrors or archive formats for the same release); the first match is
-  # used intentionally. Write a urlQuery that resolves to a single, stable
-  # asset if this matters for your package.
-  download_url="$(
-    printf '%s' "$metadata" | jq -r --arg version "$version" "$url_query" | head -n 1
-  )"
-  if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
-    echo "[$name] could not determine download url from metadata" >&2
+  source_systems=()
+  source_urls=()
+  source_hashes=()
+
+  if [ "$url_queries" != "null" ]; then
+    mapfile -t source_systems < <(jq -r '.systems[]' <<<"$pkg")
+  else
+    source_systems+=("")
+  fi
+
+  source_failed=false
+  for system in "${source_systems[@]}"; do
+    if [ -n "$system" ]; then
+      query="$(jq -r --arg system "$system" '.[$system]' <<<"$url_queries")"
+    else
+      query="$url_query"
+    fi
+
+    # A query may match mirrors or archive variants; the first match wins.
+    download_url="$(
+      printf '%s' "$metadata" | jq -r --arg version "$version" "$query" | head -n 1
+    )"
+    if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
+      echo "[$name] could not determine download url${system:+ for $system}" >&2
+      source_failed=true
+      break
+    fi
+
+    if ! prefetch_json="$(nix store prefetch-file --json "$download_url")"; then
+      echo "[$name] failed to prefetch download url${system:+ for $system}" >&2
+      source_failed=true
+      break
+    fi
+    nix_hash="$(jq -r '.hash' <<<"$prefetch_json")"
+    if [ -z "$nix_hash" ] || [ "$nix_hash" = "null" ]; then
+      echo "[$name] could not determine nix hash${system:+ for $system}" >&2
+      source_failed=true
+      break
+    fi
+
+    source_urls+=("$download_url")
+    source_hashes+=("$nix_hash")
+  done
+
+  if [ "$source_failed" = true ]; then
     continue
   fi
 
-  if ! prefetch_json="$(nix store prefetch-file --json "$download_url")"; then
-    echo "[$name] failed to prefetch download url; skipping this package" >&2
-    continue
-  fi
-  nix_hash="$(jq -r '.hash' <<<"$prefetch_json")"
-  if [ -z "$nix_hash" ] || [ "$nix_hash" = "null" ]; then
-    echo "[$name] could not determine nix hash from prefetch output" >&2
-    continue
-  fi
-
-  cat > "$generated_file" <<EOF
+  if [ "$url_queries" = "null" ]; then
+    cat > "$generated_file" <<EOF
 {
   version = "$version";
-  url = "$download_url";
-  hash = "$nix_hash";
+  url = "${source_urls[0]}";
+  hash = "${source_hashes[0]}";
   metadataHash = "$metadata_hash";
 }
 EOF
+  else
+    {
+      echo '{'
+      echo "  version = \"$version\";"
+      echo "  url = \"${source_urls[0]}\";"
+      echo "  hash = \"${source_hashes[0]}\";"
+      echo '  sources = {'
+      for index in "${!source_systems[@]}"; do
+        echo "    \"${source_systems[$index]}\" = {"
+        echo "      url = \"${source_urls[$index]}\";"
+        echo "      hash = \"${source_hashes[$index]}\";"
+        echo '    };'
+      done
+      echo '  };'
+      echo "  metadataHash = \"$metadata_hash\";"
+      echo '}'
+    } > "$generated_file"
+  fi
 
   printf '%s' "$metadata_hash" > "$metadata_hash_file"
 
   echo "[$name] updated to $version"
-  echo "  url:  $download_url"
-  echo "  hash: $nix_hash"
+  for index in "${!source_urls[@]}"; do
+    echo "  ${source_systems[$index]:+${source_systems[$index]} }url:  ${source_urls[$index]}"
+    echo "  ${source_systems[$index]:+${source_systems[$index]} }hash: ${source_hashes[$index]}"
+  done
 
   changed_names+=("$name")
   changed_summary+=("- **$name**: $version")

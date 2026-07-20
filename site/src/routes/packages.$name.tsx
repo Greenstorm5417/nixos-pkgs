@@ -124,7 +124,18 @@ environment.systemPackages = [
         <h2 className="text-xl font-semibold text-white">Usage</h2>
 
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-slate-300">Run directly</h3>
+          <h3 className="text-sm font-medium text-slate-300">
+            Install without flakes
+          </h3>
+          <CodeBlock>{`nix-channel --add https://github.com/${repoSlug}/archive/refs/heads/main.tar.gz nixos-pkgs
+nix-channel --update nixos-pkgs
+nix-env -iA nixos-pkgs.${pkg.name}`}</CodeBlock>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-slate-300">
+            Run directly with Nix
+          </h3>
           <CodeBlock>{`nix run github:${repoSlug}#${pkg.name}`}</CodeBlock>
         </div>
 

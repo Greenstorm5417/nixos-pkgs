@@ -1,9 +1,8 @@
 # nixos-pkgs
 
 A generic, extensible framework for auto-updating Nix packages whose
-upstreams don't publish timely Nix packaging themselves. `kiro` ships as the
-first example package; adding another one doesn't require touching the
-updater, workflows, flake logic, or the website.
+upstreams don't publish timely Nix packaging themselves. Packages can either
+override an existing nixpkgs derivation or consume standalone release archives.
 
 Live site: <https://greenstorm5417.github.io/nixos-pkgs/>
 
@@ -11,8 +10,8 @@ Live site: <https://greenstorm5417.github.io/nixos-pkgs/>
 
 - **`packages.json`** is the single source of truth. Each entry describes one
   package: where to fetch its release metadata, how to pull the version and
-  download URL out of that metadata (as `jq` filters), which nixpkgs attribute
-  to use as the base derivation, target system, and whether it's unfree.
+  download URL(s) out of that metadata (as `jq` filters), supported systems,
+  package kind, and whether it's unfree.
 - **`packages/<name>/`** holds the generated/derived files for that package:
   - `generated.nix` — current version, download URL, Nix store hash, and a
     hash of the upstream metadata (used for change detection). Written by the
@@ -27,6 +26,8 @@ Live site: <https://greenstorm5417.github.io/nixos-pkgs/>
   Nix store hash, and rewrites `generated.nix`.
 - **`flake.nix`** dynamically builds an output for every package listed in
   `packages.json` — no per-package wiring needed.
+- **`default.nix`** exposes the same rolling packages to channels and other
+  non-flake consumers.
 - **`site/`** is a [TanStack Start](https://tanstack.com/start) + Bun +
   TypeScript app that is **prerendered to fully static HTML** for GitHub Pages.
 
@@ -109,6 +110,45 @@ $ bun run build   # static output in site/dist/client
 
 ## Consuming packages from this repo
 
+### Without flakes
+
+Install the rolling channel once, then install or update packages without
+specifying a version:
+
+```console
+$ nix-channel --add https://github.com/Greenstorm5417/nixos-pkgs/archive/refs/heads/main.tar.gz nixos-pkgs
+$ nix-channel --update nixos-pkgs
+$ nix-env -iA nixos-pkgs.zoeken
+```
+
+For a non-flake NixOS configuration:
+
+```nix
+{ pkgs, ... }:
+
+let
+  nixos-pkgs = import (builtins.fetchTarball
+    "https://github.com/Greenstorm5417/nixos-pkgs/archive/refs/heads/main.tar.gz") {
+    inherit pkgs;
+  };
+in
+{
+  environment.systemPackages = [ nixos-pkgs.zoeken ];
+}
+```
+
+Both forms follow `main`; updating the channel or rebuilding after upstream
+metadata changes picks up the current package.
+
+### With flakes
+
+Run or install a rolling package without creating your own flake:
+
+```console
+$ nix run github:Greenstorm5417/nixos-pkgs#zoeken
+$ nix profile install github:Greenstorm5417/nixos-pkgs#zoeken
+```
+
 ```nix
 {
   inputs.nixos-pkgs.url = "github:Greenstorm5417/nixos-pkgs";
@@ -130,7 +170,7 @@ environment.systemPackages = [
 ];
 ```
 
-See `packages/kiro/example-flake.nix` for a complete example.
+See `packages/zoeken/example-flake.nix` for a complete example.
 
 ## Automation
 
