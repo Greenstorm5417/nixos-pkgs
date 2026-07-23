@@ -12,5 +12,5 @@
       hash = "sha256-orYfygL94I7++tt2UsW1TTSc+QsBk1+tADTb6t/uke0=";
     };
   };
-  metadataHash = "e4df7a98776c01789b0d1114ecfef04050ca1865f292cfff7724aa8376562ac9";
+  metadataHash = "1fa11b1e3fbbd414d1d40c81ca748c309f3b52e6ee95941461a6b419e8e950c4";
 }
