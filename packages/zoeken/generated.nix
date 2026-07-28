@@ -1,16 +1,16 @@
 {
-  version = "1.3.3";
-  url = "https://github.com/Greenstorm5417/Zoeken/releases/download/v1.3.3/zoeken_1.3.3_x86_64-linux.tar.gz";
-  hash = "sha256-UQeEIG4pGpdDfxr85nnYm6rf+YP1rWH0eaVbtfdJsWg=";
+  version = "1.4.0";
+  url = "https://github.com/Greenstorm5417/Zoeken/releases/download/v1.4.0/zoeken_1.4.0_x86_64-linux.tar.gz";
+  hash = "sha256-i+2bQKFtaNN76pteQYhUiLD8pfBXGnnps5BJATgX9TQ=";
   sources = {
     "x86_64-linux" = {
-      url = "https://github.com/Greenstorm5417/Zoeken/releases/download/v1.3.3/zoeken_1.3.3_x86_64-linux.tar.gz";
-      hash = "sha256-UQeEIG4pGpdDfxr85nnYm6rf+YP1rWH0eaVbtfdJsWg=";
+      url = "https://github.com/Greenstorm5417/Zoeken/releases/download/v1.4.0/zoeken_1.4.0_x86_64-linux.tar.gz";
+      hash = "sha256-i+2bQKFtaNN76pteQYhUiLD8pfBXGnnps5BJATgX9TQ=";
     };
     "aarch64-linux" = {
-      url = "https://github.com/Greenstorm5417/Zoeken/releases/download/v1.3.3/zoeken_1.3.3_aarch64-linux.tar.gz";
-      hash = "sha256-gvQu7jplh+rqMXM+MYvdLkfjeLBf57qxxfOzG4ltRao=";
+      url = "https://github.com/Greenstorm5417/Zoeken/releases/download/v1.4.0/zoeken_1.4.0_aarch64-linux.tar.gz";
+      hash = "sha256-UX35iU39H7Sxxf8TzYqbcpUyyv6tt4PIYtAsMyXLJfg=";
     };
   };
-  metadataHash = "3e0e4e5bda2af4806661bbe526cd73017fdaf00d62574c94b3b3de1117684832";
+  metadataHash = "0ffc5f7bee192bbd9e4cee577a5cb0e14b2bd2425e8a75ccb5d0ae1847b966bf";
 }
