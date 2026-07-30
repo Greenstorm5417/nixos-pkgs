@@ -118,7 +118,7 @@ specifying a version:
 ```console
 $ nix-channel --add https://github.com/Greenstorm5417/nixos-pkgs/archive/refs/heads/main.tar.gz nixos-pkgs
 $ nix-channel --update nixos-pkgs
-$ nix-env -iA nixos-pkgs.zoeken
+$ nix-env -iA nixos-pkgs.kiro
 ```
 
 For a non-flake NixOS configuration:
@@ -133,7 +133,7 @@ let
   };
 in
 {
-  environment.systemPackages = [ nixos-pkgs.zoeken ];
+  environment.systemPackages = [ nixos-pkgs.kiro ];
 }
 ```
 
@@ -145,8 +145,8 @@ metadata changes picks up the current package.
 Run or install a rolling package without creating your own flake:
 
 ```console
-$ nix run github:Greenstorm5417/nixos-pkgs#zoeken
-$ nix profile install github:Greenstorm5417/nixos-pkgs#zoeken
+$ nix run github:Greenstorm5417/nixos-pkgs#kiro
+$ nix profile install github:Greenstorm5417/nixos-pkgs#kiro
 ```
 
 ```nix
@@ -170,7 +170,7 @@ environment.systemPackages = [
 ];
 ```
 
-See `packages/zoeken/example-flake.nix` for a complete example.
+
 
 ## Automation
 
