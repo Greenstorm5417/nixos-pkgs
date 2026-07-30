@@ -41,7 +41,7 @@
           import (./packages + "/${name}") { pkgs = prev; }
         else
           import (./packages + "/${name}") {
-            inherit (prev) fetchurl libcap;
+            inherit (prev) fetchurl libcap ripgrep;
             base = prev.${cfg.baseAttr};
           };
     in
