@@ -1,6 +1,6 @@
 {
-  version = "1.0.395";
-  url = "https://prod.download.desktop.kiro.dev/releases/stable/linux-x64/signed/1.0.395/tar/kiro-ide-1.0.395-stable-linux-x64.tar.gz";
-  hash = "sha256-w415WfZvqmh4Zv+/RoVBXLX57OqtRD/RcU2h3ZHNyWk=";
-  metadataHash = "54520593c08eb0ba4c2f3a525b161987301cb9ba62c97b1abea80db2d66c5ec9";
+  version = "1.0.411";
+  url = "https://prod.download.desktop.kiro.dev/releases/stable/linux-x64/signed/1.0.411/tar/kiro-ide-1.0.411-stable-linux-x64.tar.gz";
+  hash = "sha256-/tFMdnFgVuYTYOgQQ6OQ3kZmgDSzyp8Ez8YXu67ehrs=";
+  metadataHash = "a56c10bedf374b267afbe7e2613bf313ca3a37bf46584d90cb79214e413755fa";
 }
