@@ -12,25 +12,34 @@ let
   fixRipgrepPatch =
     postPatch:
     let
-      parts = builtins.split "\nrm resources/app/node_modules/@vscode/ripgrep/bin/rg\n" postPatch;
-    in
-    if builtins.length parts > 1 then
-      builtins.head parts
-      + "\n"
-      + ''
-        # Replace the bundled rg with the Nix-provided one.
-        # Handles both the old (<vscode 1.122) and new (>=1.122) ripgrep layouts.
-        for _rg_dir in \
-            resources/app/node_modules/@vscode/ripgrep/bin \
-            resources/app/node_modules/@vscode/ripgrep-universal/bin/linux-x64; do
-          if [ -d "$_rg_dir" ]; then
+      target = "rm resources/app/node_modules/@vscode/ripgrep/bin/rg";
+      marker = "# nixos-pkgs: kiro ripgrep relink";
+      replacement = ''
+        ${marker}
+        if [ -d resources/app/node_modules/@vscode/ripgrep-universal/bin ]; then
+          rm -f resources/app/node_modules/@vscode/ripgrep-universal/bin/rg
+          while IFS= read -r -d "" _rg_dir; do
             rm -f "$_rg_dir/rg"
-            ln -s ${ripgrep}/bin/rg "$_rg_dir/rg"
-          fi
-        done
-      ''
+            ln -sf ${ripgrep}/bin/rg "$_rg_dir/rg"
+          done < <(find resources/app/node_modules/@vscode/ripgrep-universal/bin -mindepth 1 -maxdepth 1 -type d -print0)
+          ln -sf ${ripgrep}/bin/rg resources/app/node_modules/@vscode/ripgrep-universal/bin/rg
+        fi
+        mkdir -p resources/app/node_modules/@vscode/ripgrep/bin
+        rm -f resources/app/node_modules/@vscode/ripgrep/bin/rg
+        ln -sf ${ripgrep}/bin/rg resources/app/node_modules/@vscode/ripgrep/bin/rg
+      '';
+      hasMarker = postPatch != builtins.replaceStrings [ marker ] [ "" ] postPatch;
+      patched = builtins.replaceStrings
+        [ target ]
+        [ replacement ]
+        postPatch;
+    in
+    if postPatch == "" then
+      replacement
+    else if postPatch == patched then
+      if hasMarker then postPatch else postPatch + "\n" + replacement
     else
-      postPatch;
+      patched;
 in
 base.overrideAttrs (old: {
   version = generated.version;
