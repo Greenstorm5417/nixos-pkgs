@@ -1,6 +1,6 @@
 {
-  version = "3.10.31";
-  url = "https://windsurf-stable.codeiumdata.com/linux-x64/stable/b98cc43128712ba73c60cca73876f58a710aaa27/Devin-linux-x64-3.10.31.tar.gz";
-  hash = "sha256-s93xCYwRJVNU1goHeNcDOYnq7YWje71V35AWf0LrU0Y=";
-  metadataHash = "b52aa7ff1ccb33b97a81a9f941facc6d0113bc918dcc045b4217940f91a1044e";
+  version = "3.10.67";
+  url = "https://windsurf-stable.codeiumdata.com/linux-x64/stable/0b186d6e13a1a48a46430c51fe414dd0747d46f6/Devin-linux-x64-3.10.67.tar.gz";
+  hash = "sha256-MpX4vftGAYCn6WlhwKYVbxCLZQJoQofxe4tRIkbDWAM=";
+  metadataHash = "cddb44fc6224015fa0616a3baa5a7cc1078c41e24eace13536325171aa3e0042";
 }
